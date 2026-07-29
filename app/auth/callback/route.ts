@@ -8,9 +8,23 @@ export async function GET(request: NextRequest) {
   if (code) {
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
     )
-    await supabase.auth.exchangeCodeForSession(code)
+
+    const { data } = await supabase.auth.exchangeCodeForSession(code)
+    console.log('Session:', JSON.stringify(data?.session?.provider_token))
+
+    if (data.session) {
+      const { user, provider_token } = data.session
+
+      if (user && provider_token) {
+        await supabase.from('users').upsert({
+          id: user.id,
+          email: user.email,
+          provider_token,
+        })
+      }
+    }
   }
 
   return NextResponse.redirect(new URL('/dashboard', requestUrl.origin))
