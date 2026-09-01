@@ -2,7 +2,7 @@
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '../../lib/supabase'
-
+  
 export default function AuthCallback() {
   const router = useRouter()
 
@@ -10,7 +10,7 @@ export default function AuthCallback() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN' && session) {
         if (session.provider_token) {
-          await supabase.from('users').upsert({
+          await supabase.from(  'users').upsert({
             id: session.user.id,
             email: session.user.email ?? '',
             provider_token: session.provider_token,

@@ -46,37 +46,33 @@ export default function DashboardPage() {
   }, [])
 
   useEffect(() => {
-    const init = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session?.user) return
-
-      const uid = session.user.id
-      setUserId(uid)
-
-      if (session.provider_token) {
-        await supabase.from('users').upsert({
-          id: uid,
-          email: session.user.email ?? '',
-          provider_token: session.provider_token,
-        })
-      }
-
-      const { data: incomeData } = await supabase
-        .from('income_entries')
-        .select('amount')
-        .eq('user_id', uid)
-        .eq('month', currentMonth)
-        .single()
-
-      if (incomeData) {
-        setIncome(incomeData.amount as number)
-        setIncomeInput(String(incomeData.amount))
-      }
-
-      await loadTransactions(uid)
+  const init = async (uid: string, providerToken?: string | null) => {
+    setUserId(uid)
+    if (providerToken) {
+      await supabase.from('users').upsert({
+        id: uid, email: '', provider_token: providerToken,
+      })
     }
-    init()
-  }, [loadTransactions])
+    const { data: incomeData } = await supabase
+      .from('income_entries').select('amount')
+      .eq('user_id', uid).eq('month', currentMonth).single()
+    if (incomeData) {
+      setIncome(incomeData.amount as number)
+      setIncomeInput(String(incomeData.amount))
+    }
+    await loadTransactions(uid)
+  }
+
+  supabase.auth.getSession().then(({ data: { session } }) => {
+    if (session?.user) init(session.user.id, session.provider_token)
+  })
+
+  const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    if (session?.user) init(session.user.id, session.provider_token)
+  })
+
+  return () => subscription.unsubscribe()
+}, [loadTransactions])
 
   const handleSync = async () => {
     if (!userId) return
