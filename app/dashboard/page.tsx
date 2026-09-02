@@ -54,11 +54,11 @@ export default function DashboardPage() {
       })
     }
     const { data: incomeData } = await supabase
-      .from('income_entries').select('amount')
+      .from('income_entries').select('gross_amount')
       .eq('user_id', uid).eq('month', currentMonth).single()
     if (incomeData) {
-      setIncome(incomeData.amount as number)
-      setIncomeInput(String(incomeData.amount))
+      setIncome(incomeData.gross_amount as number)
+      setIncomeInput(String(incomeData.gross_amount))
     }
     await loadTransactions(uid)
   }
