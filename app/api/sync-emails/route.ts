@@ -11,7 +11,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-async function fetchMessages(token: string, query: string, maxResults = 20) {
+async function fetchMessages(token: string, query: string, maxResults = 5) {
   const listRes = await fetch(
     `https://www.googleapis.com/gmail/v1/users/me/messages?q=${encodeURIComponent(query)}&maxResults=${maxResults}`,
     { headers: { Authorization: `Bearer ${token}` } }
